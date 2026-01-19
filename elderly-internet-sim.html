@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Internet Experience Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+            overflow-x: hidden;
+        }
+
+        .browser-chrome {
+            background: linear-gradient(to bottom, #e8e8e8, #d0d0d0);
+            padding: 10px;
+            border-bottom: 2px solid #999;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .url-bar {
+            background: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        .main-content {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .main-content h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .main-content h2 {
+            color: #34495e;
+            margin: 25px 0 15px 0;
+            font-size: 22px;
+            border-left: 4px solid #667eea;
+            padding-left: 10px;
+        }
+
+        .main-content p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .popup {
+            position: fixed;
+            background: white;
+            border: 2px solid #333;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 8px;
+            z-index: 1000;
+            min-width: 320px;
+            max-width: 600px;
+            animation: popIn 0.3s ease-out;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .popup.large {
+            max-width: 700px;
+            width: 90vw;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .popup-header {
+            background: linear-gradient(to bottom, #4a90e2, #357abd);
+            color: white;
+            padding: 8px 12px;
+            margin: -20px -20px 15px -20px;
+            border-radius: 6px 6px 0 0;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .popup-close {
+            background: #d9534f;
+            border: none;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .popup-close:hover {
+            background: #c9302c;
+        }
+
+        .popup-content {
+            margin-bottom: 15px;
+        }
+
+        .popup-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .popup-buttons button {
+            flex: 1;
+            min-width: 100px;
+            padding: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #f8f8f8;
+            transition: background 0.2s;
+        }
+
+        .popup-buttons button:hover {
+            background: #e8e8e8;
+        }
+
+        .popup-buttons button.primary {
+            background: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+
+        .popup-buttons button.primary:hover {
+            background: #45a049;
+        }
+
+        .popup-buttons button.danger {
+            background: #f44336;
+            color: white;
+            border-color: #f44336;
+        }
+
+        .popup-buttons button.danger:hover {
+            background: #da190b;
+        }
+
+        .warning {
+            border-color: #ff6b6b;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .warning .popup-header {
+            background: linear-gradient(to bottom, #ff6b6b, #d63031);
+        }
+
+        .ad-banner {
+            position: fixed;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            z-index: 999;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            animation: blink 1s infinite;
+            cursor: pointer;
+        }
+
+        .image-banner {
+            position: fixed;
+            z-index: 999;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            border: 3px solid #fff;
+            animation: slideIn 0.5s ease-out, pulse 2s infinite 0.5s;
+            overflow: hidden;
+        }
+
+        .image-banner.bottom {
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 728px;
+            height: 90px;
+        }
+
+        .image-banner.side {
+            right: 0;
+            top: 120px;
+            width: 160px;
+            height: 600px;
+        }
+
+        .image-banner.top {
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 970px;
+            height: 90px;
+        }
+
+        @media (max-width: 768px) {
+            .image-banner.side {
+                display: none;
+            }
+            
+            .image-banner.top {
+                width: 95%;
+                height: 60px;
+            }
+            
+            .image-banner.bottom {
+                width: 95%;
+                height: 70px;
+            }
+            
+            .banner-text.large {
+                font-size: 16px;
+            }
+            
+            .banner-emoji {
+                font-size: 24px;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-50%) translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { 
+                transform: translateX(-50%) scale(1);
+                box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            }
+            50% { 
+                transform: translateX(-50%) scale(1.02);
+                box-shadow: 0 8px 30px rgba(255,0,0,0.6);
+            }
+        }
+
+        .banner-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .banner-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.3;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .banner-text {
+            position: relative;
+            z-index: 2;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            color: white;
+            font-size: 20px;
+            line-height: 1.2;
+        }
+
+        .banner-text.large {
+            font-size: 28px;
+        }
+
+        .image-banner.side .banner-text.large {
+            font-size: 18px;
+        }
+
+        .image-banner.side .banner-emoji {
+            font-size: 30px;
+        }
+
+        .banner-emoji {
+            font-size: 40px;
+            display: inline-block;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .floating-message {
+            position: fixed;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border: 3px solid #FF6347;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(255, 99, 71, 0.5);
+            z-index: 998;
+            animation: float 3s ease-in-out infinite;
+            cursor: pointer;
+            max-width: 300px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .click-area {
+            color: #667eea;
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .click-area:hover {
+            color: #f5576c;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(245, 87, 108, 0.1) 100%);
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .button-area {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+            text-decoration: none;
+        }
+
+        .button-area:hover {
+            background: #45a049;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 997;
+            cursor: pointer;
+        }
+
+        .instruction-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .metadata {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border-radius: 4px;
+            border-left: 3px solid #667eea;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .form-group {
+            margin: 15px 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .countdown {
+            color: #f44336;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .partner-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 15px 0;
+            background: #f9f9f9;
+        }
+
+        .partner-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 13px;
+        }
+
+        .partner-item:hover {
+            background: #f0f0f0;
+        }
+
+        .partner-name {
+            flex: 1;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            margin-left: 10px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #4CAF50;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        .toggle-switch input:checked + .slider {
+            background-color: #4CAF50;
+        }
+
+        .toggle-switch input:not(:checked) + .slider {
+            background-color: #ccc;
+        }
+
+        .toggle-switch input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .partner-list-header {
+            background: #e3f2fd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .partner-category {
+            background: #f5f5f5;
+            padding: 6px 8px;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #555;
+            border-left: 3px solid #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <div class="browser-chrome">
+        <div class="url-bar">🔒 https://www.healthnews-today.com/staying-connected</div>
+    </div>
+
+    <div class="main-content">
+        <div class="instruction-box">
+            <strong>📱 Experience Simulator:</strong> Try to read this article about staying connected online. Click any link or button to see what happens next.
+        </div>
+
+        <h1>Staying Connected: A Guide for Seniors in the Digital Age</h1>
+        <div class="metadata">Published: Today | 5 min read | Category: Technology</div>
+
+        <p>The internet has become an essential tool for staying connected with family and friends. Many seniors are discovering the joy of <span class="click-area" data-trigger="video-call">video calling their grandchildren</span>, sharing photos on social media, and accessing important services from the comfort of their homes.</p>
+
+        <p>However, navigating the digital world can feel overwhelming at first. From <span class="click-area" data-trigger="cookies">accepting cookie notices</span> to understanding <span class="click-area" data-trigger="security">online security</span>, there are many new concepts to learn.</p>
+
+        <h2>Getting Started with Email</h2>
+        <p>Email remains one of the most popular ways to stay in touch. To set up your first email account, <span class="click-area" data-trigger="email-setup">click here for our step-by-step guide</span>. Remember to choose a strong password and never share it with anyone you don't trust.</p>
+
+        <p>Many people worry about <span class="click-area" data-trigger="scam">spam and scam emails</span>. If something seems too good to be true, it probably is. Be cautious of emails asking for personal information or promising prizes.</p>
+
+        <h2>Social Media and Video Calls</h2>
+        <p>Platforms like Facebook and WhatsApp make it easy to share life's moments with loved ones. You can <span class="click-area" data-trigger="social">join our community</span> to learn tips and tricks from other seniors who are already online.</p>
+
+        <p>Video calling has revolutionized how families stay connected. Services like Zoom, Skype, and FaceTime allow you to see and hear your family members, no matter where they are in the world. <span class="click-area" data-trigger="video-guide">Learn how to make your first video call</span> with our simple tutorial.</p>
+
+        <h2>Online Shopping and Banking</h2>
+        <p>The convenience of online shopping means you can <span class="click-area" data-trigger="shopping">order groceries</span>, medications, and other essentials without leaving home. Most websites offer easy-to-follow checkout processes and secure payment options.</p>
+
+        <p>Online banking allows you to <span class="click-area" data-trigger="banking">check your balance, pay bills, and transfer money</span> at any time. While it may seem intimidating at first, most banks offer excellent customer support to help you get started.</p>
+
+        <div style="margin: 30px 0; text-align: center;">
+            <span class="button-area" data-trigger="newsletter">Subscribe to Our Newsletter</span>
+            <span class="button-area" data-trigger="course">Take Our Free Course</span>
+        </div>
+
+        <h2>Staying Safe Online</h2>
+        <p>Remember these key safety tips: Never share your passwords, be skeptical of unsolicited messages, and always verify the website address before entering personal information. If you're unsure about something, <span class="click-area" data-trigger="help">ask for help</span> from a trusted family member or friend.</p>
+    </div>
+
+    <script>
+        let popupCounter = 0;
+
+        // Define the entire conversation tree
+        const conversationTree = {
+            'cookies-accept': [
+                {
+                    title: "🔔 Enable Notifications",
+                    message: "Great! Now enable notifications to stay updated with our latest content and special offers.",
+                    buttons: [
+                        { text: "Allow", next: "notifications-allow" },
+                        { text: "Block", next: "notifications-block" },
+                        { text: "Not Now", next: "notifications-later" }
+                    ]
+                }
+            ],
+            'notifications-allow': [
+                {
+                    title: "📍 Location Access",
+                    message: "To provide personalized content for your area, we need access to your location. This helps us show relevant local news and weather.",
+                    buttons: [
+                        { text: "Allow", next: "location-allow" },
+                        { text: "Deny", next: "location-deny" }
+                    ]
+                }
+            ],
+            'location-allow': [
+                {
+                    title: "📧 Complete Your Profile",
+                    message: "Almost done! Enter your email and phone number to receive exclusive senior discounts and health tips.",
+                    buttons: [
+                        { text: "Continue", next: "profile-form" },
+                        { text: "Skip", next: "skip-profile" }
+                    ],
+                    hasForm: true
+                }
+            ],
+            'notifications-block': [
+                {
+                    title: "⚠️ Warning",
+                    message: "You won't receive important security alerts! Are you sure you want to block notifications?",
+                    buttons: [
+                        { text: "I'm Sure", next: "end" },
+                        { text: "Allow Notifications", next: "notifications-allow" }
+                    ]
+                }
+            ],
+            'cookies-reject': [
+                {
+                    title: "⚠️ Limited Experience",
+                    message: "Without cookies, some features won't work properly. You may experience: Slower loading times, Loss of saved preferences, Limited personalization. Reconsider?",
+                    buttons: [
+                        { text: "Accept Cookies", next: "cookies-accept" },
+                        { text: "Continue Anyway", next: "end" }
+                    ]
+                }
+            ],
+            'cookies-customize': [
+                {
+                    title: "🍪 Cookie Categories",
+                    message: "Choose which cookies to accept: Necessary (Required), Functional, Analytics, Marketing, Social Media, Third-party advertising...",
+                    buttons: [
+                        { text: "Accept Selected", next: "cookies-accept" },
+                        { text: "Accept All", next: "cookies-accept" },
+                        { text: "View Partners (847)", next: "partners-list" }
+                    ]
+                }
+            ],
+            'partners-list': [
+                {
+                    title: "📋 Our Partners",
+                    message: "Loading partner list... Google, Facebook, Amazon, Microsoft, Adobe, Oracle, plus 841 more companies. Each partner has their own privacy policy.",
+                    buttons: [
+                        { text: "Accept All", next: "cookies-accept" },
+                        { text: "Review Each", next: "review-partners" },
+                        { text: "Go Back", next: "cookies-customize" }
+                    ]
+                }
+            ],
+            'review-partners': [
+                {
+                    title: "👥 Partner Preferences (847 partners)",
+                    message: "Review and customize each partner's data access. All partners are enabled by default. Toggle off partners you don't want to share data with:",
+                    buttons: [
+                        { text: "Save Preferences", next: "cookies-accept" },
+                        { text: "Accept All", next: "cookies-accept" },
+                        { text: "Reject All", next: "reject-all-partners" },
+                        { text: "Back", next: "partners-list" }
+                    ],
+                    hasPartnerList: true
+                }
+            ],
+            'reject-all-partners': [
+                {
+                    title: "⚠️ Confirm Rejection",
+                    message: "Are you sure you want to reject all 847 partners? This may significantly impact your experience: Ads won't be personalized, Some features may not work, Content recommendations will be limited, Page loading may be slower",
+                    buttons: [
+                        { text: "Yes, Reject All", next: "cookies-accept" },
+                        { text: "Go Back", next: "review-partners" },
+                        { text: "Accept All Instead", next: "cookies-accept" }
+                    ]
+                }
+            ],
+            'security-secure': [
+                {
+                    title: "🔐 Verify Your Identity",
+                    message: "For security purposes, please verify your identity by entering the code sent to your email ending in ***@***.com",
+                    buttons: [
+                        { text: "Enter Code", next: "verify-code" },
+                        { text: "Didn't Receive", next: "resend-code" },
+                        { text: "Use Phone Instead", next: "phone-verify" }
+                    ],
+                    hasForm: true
+                }
+            ],
+            'verify-code': [
+                {
+                    title: "⏰ Code Expired",
+                    message: "The verification code has expired for security reasons. Request a new code?",
+                    buttons: [
+                        { text: "Send New Code", next: "security-secure" },
+                        { text: "Try Different Method", next: "alternative-verify" }
+                    ]
+                }
+            ],
+            'phone-verify': [
+                {
+                    title: "📱 Phone Verification",
+                    message: "We'll call your registered phone number. Please answer and enter the 6-digit code you hear. Standard rates may apply.",
+                    buttons: [
+                        { text: "Call Me Now", next: "phone-calling" },
+                        { text: "Send SMS Instead", next: "sms-verify" },
+                        { text: "Cancel", next: "end" }
+                    ]
+                }
+            ],
+            'video-download': [
+                {
+                    title: "⬇️ Downloading...",
+                    message: "Installing VideoCall Pro... 847 MB<br><span id='download-progress'></span>",
+                    buttons: [
+                        { text: "Cancel", next: "cancel-download" }
+                    ],
+                    hasProgress: true
+                }
+            ],
+            'video-install': [
+                {
+                    title: "⚙️ Installation",
+                    message: "VideoCall Pro will make changes to your device. Grant administrator privileges to continue?",
+                    buttons: [
+                        { text: "Allow", next: "admin-allow" },
+                        { text: "Deny", next: "admin-deny" }
+                    ],
+                    isWarning: true
+                }
+            ],
+            'admin-allow': [
+                {
+                    title: "🎉 Installation Complete!",
+                    message: "VideoCall Pro is now installed! To get started, create your free account. We'll also install helpful toolbars and search features.",
+                    buttons: [
+                        { text: "Create Account", next: "video-account" },
+                        { text: "Skip Toolbars", next: "skip-toolbars" }
+                    ]
+                }
+            ],
+            'skip-toolbars': [
+                {
+                    title: "⚠️ Enhanced Features Disabled",
+                    message: "Without our recommended toolbars, you'll miss out on: Quick search access, Weather updates, News feed, Shopping deals. Install anyway?",
+                    buttons: [
+                        { text: "Install Toolbars", next: "admin-allow" },
+                        { text: "Continue Without", next: "video-account" }
+                    ]
+                }
+            ],
+            'camera-allow': [
+                {
+                    title: "🎤 Microphone Access",
+                    message: "Camera access granted! Now we need microphone access for audio calls.",
+                    buttons: [
+                        { text: "Allow", next: "mic-allow" },
+                        { text: "Block", next: "mic-block" }
+                    ]
+                }
+            ],
+            'mic-allow': [
+                {
+                    title: "📞 Contact Access",
+                    message: "To help you connect with friends and family, allow access to your contacts list?",
+                    buttons: [
+                        { text: "Allow", next: "contacts-sync" },
+                        { text: "Deny", next: "manual-contacts" }
+                    ]
+                }
+            ],
+            'contacts-sync': [
+                {
+                    title: "🔄 Syncing Contacts...",
+                    message: "Uploading 247 contacts to our servers... This helps us suggest friends and improve your experience. Found 12 friends already using VideoCall!",
+                    buttons: [
+                        { text: "View Friends", next: "friend-suggestions" },
+                        { text: "Continue", next: "end" }
+                    ]
+                }
+            ],
+            'email-continue': [
+                {
+                    title: "📝 Create Your Account",
+                    message: "Enter your details to create your free email account:",
+                    buttons: [
+                        { text: "Submit", next: "email-verify" },
+                        { text: "Use Google Instead", next: "google-signin" },
+                        { text: "Use Facebook", next: "facebook-signin" }
+                    ],
+                    hasForm: true,
+                    formFields: ['Email', 'Password', 'Confirm Password', 'Phone Number']
+                }
+            ],
+            'email-verify': [
+                {
+                    title: "✉️ Verify Your Email",
+                    message: "We've sent a verification link to your email. Please check your inbox (and spam folder) and click the link to activate your account.",
+                    buttons: [
+                        { text: "I've Verified", next: "verification-check" },
+                        { text: "Resend Email", next: "resend-verify" },
+                        { text: "Change Email", next: "email-continue" }
+                    ]
+                }
+            ],
+            'verification-check': [
+                {
+                    title: "⏳ Verification Pending",
+                    message: "We haven't received confirmation that you clicked the link. Please check your email again. It may take a few minutes to arrive.",
+                    buttons: [
+                        { text: "Check Again", next: "verification-check" },
+                        { text: "Resend", next: "resend-verify" },
+                        { text: "Contact Support", next: "support-ticket" }
+                    ]
+                }
+            ],
+            'google-signin': [
+                {
+                    title: "🔐 Sign in with Google",
+                    message: "EmailPro wants to: View your email address, View your basic profile info, Access your Google contacts, Manage your calendar",
+                    buttons: [
+                        { text: "Allow", next: "google-auth" },
+                        { text: "Deny", next: "email-continue" }
+                    ]
+                }
+            ],
+            'scam-claim': [
+                {
+                    title: "🎁 Claim Your Prize",
+                    message: "Congratulations! To receive your $5,000 prize, we need to verify your identity. Please provide:",
+                    buttons: [
+                        { text: "Continue", next: "scam-info" },
+                        { text: "Learn More", next: "scam-details" },
+                        { text: "This Seems Wrong", next: "scam-report" }
+                    ],
+                    hasForm: true,
+                    formFields: ['Full Name', 'Date of Birth', 'Social Security Number', 'Bank Account'],
+                    isWarning: true
+                }
+            ],
+            'scam-report': [
+                {
+                    title: "✅ Good Catch!",
+                    message: "You're absolutely right to be suspicious! This was a simulated scam to demonstrate how fraudsters try to steal personal information. Never provide sensitive data like SSN or bank details to unexpected 'prize' notifications.",
+                    buttons: [
+                        { text: "Got It", next: "end" }
+                    ]
+                }
+            ],
+            'scam-details': [
+                {
+                    title: "📄 Prize Terms & Conditions",
+                    message: "To claim your prize you agree to: Receive daily promotional emails, Share personal information with partners, Pay processing fee of $99.99, Subscribe to monthly membership ($29.99/mo)...",
+                    buttons: [
+                        { text: "Accept Terms", next: "scam-payment" },
+                        { text: "This is a Scam", next: "scam-report" }
+                    ],
+                    isWarning: true
+                }
+            ],
+            'shopping-create': [
+                {
+                    title: "🛍️ Account Benefits",
+                    message: "Create an account to enjoy: Faster checkout, Order tracking, Exclusive deals, Personalized recommendations, Wishlist features",
+                    buttons: [
+                        { text: "Create Account", next: "shopping-form" },
+                        { text: "Guest Checkout", next: "guest-checkout" }
+                    ]
+                }
+            ],
+            'shopping-form': [
+                {
+                    title: "📝 Registration Form",
+                    message: "Fill in your details:",
+                    buttons: [
+                        { text: "Register", next: "shopping-verify" },
+                        { text: "Back", next: "shopping-create" }
+                    ],
+                    hasForm: true,
+                    formFields: ['Email', 'Password', 'First Name', 'Last Name', 'Phone']
+                }
+            ],
+            'guest-checkout': [
+                {
+                    title: "💳 Payment Information",
+                    message: "Enter your payment details to complete your order:",
+                    buttons: [
+                        { text: "Place Order", next: "order-processing" },
+                        { text: "Save Card", next: "save-payment" }
+                    ],
+                    hasForm: true,
+                    formFields: ['Card Number', 'Expiry Date', 'CVV', 'Billing Address']
+                }
+            ],
+            'save-payment': [
+                {
+                    title: "🔐 Secure Storage",
+                    message: "Save your card for future purchases? We use bank-level encryption to protect your information. You can remove it anytime from your account settings.",
+                    buttons: [
+                        { text: "Save Securely", next: "order-processing" },
+                        { text: "Don't Save", next: "order-processing" }
+                    ]
+                }
+            ],
+            'banking-verify': [
+                {
+                    title: "🏦 Identity Verification",
+                    message: "For your security, please answer these security questions:",
+                    buttons: [
+                        { text: "Continue", next: "security-questions" },
+                        { text: "Why is this needed?", next: "verification-explain" },
+                        { text: "Call Bank", next: "bank-phone" }
+                    ],
+                    hasForm: true,
+                    formFields: ["Mother's Maiden Name", 'First Pet Name', 'City of Birth']
+                }
+            ],
+            'security-questions': [
+                {
+                    title: "📞 Additional Verification",
+                    message: "We'll send a one-time code to your registered phone number for additional security.",
+                    buttons: [
+                        { text: "Send Code", next: "banking-code" },
+                        { text: "Use Email", next: "banking-email-code" }
+                    ]
+                }
+            ],
+            'banking-code': [
+                {
+                    title: "⏰ Enter Code",
+                    message: "Enter the 6-digit code sent to your phone ending in **34. Code expires in <span class='countdown'>05:00</span>",
+                    buttons: [
+                        { text: "Submit", next: "code-verify" },
+                        { text: "Resend Code", next: "banking-code" },
+                        { text: "Having Issues?", next: "verification-help" }
+                    ],
+                    hasForm: true,
+                    hasCountdown: true
+                }
+            ],
+            'newsletter-subscribe': [
+                {
+                    title: "📬 Choose Your Frequency",
+                    message: "How often would you like to receive our newsletter?",
+                    buttons: [
+                        { text: "Daily", next: "topics-select" },
+                        { text: "Weekly", next: "topics-select" },
+                        { text: "Monthly", next: "topics-select" }
+                    ]
+                }
+            ],
+            'topics-select': [
+                {
+                    title: "🎯 Select Topics",
+                    message: "Choose topics you're interested in: ☐ Technology Tips, ☐ Health & Wellness, ☐ Finance, ☐ Recipes, ☐ Travel, ☐ Entertainment, ☐ Gardening, ☐ Crafts, ☐ Product Deals",
+                    buttons: [
+                        { text: "Select All", next: "subscribe-confirm" },
+                        { text: "Continue", next: "subscribe-confirm" }
+                    ]
+                }
+            ],
+            'subscribe-confirm': [
+                {
+                    title: "✅ Almost Done!",
+                    message: "You're subscribed! Would you also like to join our exclusive VIP program for premium content and early access to deals?",
+                    buttons: [
+                        { text: "Yes, Sign Me Up!", next: "vip-signup" },
+                        { text: "No Thanks", next: "upsell-reminder" }
+                    ]
+                }
+            ],
+            'vip-signup': [
+                {
+                    title: "⭐ VIP Membership",
+                    message: "VIP Membership is only $4.99/month! Includes: Ad-free experience, Exclusive articles, Priority support, Monthly giveaways. First month free!",
+                    buttons: [
+                        { text: "Start Free Trial", next: "payment-info" },
+                        { text: "Maybe Later", next: "end" }
+                    ]
+                }
+            ],
+            'course-enroll': [
+                {
+                    title: "🎓 Course Registration",
+                    message: "This comprehensive 12-week course includes: 24 video lessons, Downloadable workbooks, Live Q&A sessions, Certificate of completion, Lifetime access",
+                    buttons: [
+                        { text: "Enroll Now", next: "course-form" },
+                        { text: "See Curriculum", next: "course-details" },
+                        { text: "Read Reviews", next: "course-reviews" }
+                    ]
+                }
+            ],
+            'course-form': [
+                {
+                    title: "📝 Student Information",
+                    message: "Please fill out your information:",
+                    buttons: [
+                        { text: "Submit", next: "course-confirm" },
+                        { text: "Back", next: "course-enroll" }
+                    ],
+                    hasForm: true,
+                    formFields: ['Full Name', 'Email', 'Phone', 'Age', 'Experience Level']
+                }
+            ],
+            'course-confirm': [
+                {
+                    title: "🎉 Enrollment Successful!",
+                    message: "You're enrolled! Course starts next Monday. Before you go, would you like to purchase our recommended starter kit? (Includes: Webcam, Headset, Mouse, Notebook) Special price: $89.99 (Save 40%!)",
+                    buttons: [
+                        { text: "Add to Cart", next: "kit-checkout" },
+                        { text: "No Thanks", next: "kit-reminder" }
+                    ]
+                }
+            ]
+        };
+
+        // Initial triggers from clicking article links
+        const initialTriggers = {
+            'cookies': [
+                {
+                    title: "🍪 Cookie Consent",
+                    message: "This website uses cookies to enhance your browsing experience. We share your data with 847 partners for personalized content and advertising. By clicking Accept, you consent to our use of cookies and similar technologies.",
+                    buttons: [
+                        { text: "Accept All", next: "cookies-accept" },
+                        { text: "Reject All", next: "cookies-reject" },
+                        { text: "Customize", next: "cookies-customize" },
+                        { text: "Learn More", next: "cookies-customize" }
+                    ]
+                }
+            ],
+            'security': [
+                {
+                    title: "⚠️ SECURITY ALERT",
+                    message: "We detected suspicious login attempts on your account from: Jakarta, Indonesia - 2 hours ago | Moscow, Russia - 45 minutes ago. Secure your account immediately!",
+                    buttons: [
+                        { text: "Secure Now", next: "security-secure" },
+                        { text: "View Activity", next: "security-secure" },
+                        { text: "This Wasn't Me", next: "security-secure" }
+                    ],
+                    isWarning: true
+                }
+            ],
+            'video-call': [
+                {
+                    title: "📹 Install Video Call Software",
+                    message: "To make video calls, you need to download VideoCall Pro. This software includes: HD video quality, Screen sharing, Virtual backgrounds, Group calls up to 100 people. File size: 847MB",
+                    buttons: [
+                        { text: "Download", next: "video-download" },
+                        { text: "System Requirements", next: "video-install" },
+                        { text: "Cancel", next: "end" }
+                    ]
+                },
+                {
+                    title: "📷 Camera Access Required",
+                    message: "VideoCall needs access to your camera to function. Allow camera access?",
+                    buttons: [
+                        { text: "Allow", next: "camera-allow" },
+                        { text: "Block", next: "end" },
+                        { text: "What will you do with this?", next: "camera-allow" }
+                    ]
+                }
+            ],
+            'email-setup': [
+                {
+                    title: "📧 Choose Email Provider",
+                    message: "Select your preferred email service: ✉️ EmailPro - Unlimited storage, ✉️ QuickMail - Ad-supported, ✉️ SecureMail - Privacy focused",
+                    buttons: [
+                        { text: "EmailPro (Recommended)", next: "email-continue" },
+                        { text: "QuickMail", next: "email-continue" },
+                        { text: "SecureMail", next: "email-continue" }
+                    ]
+                }
+            ],
+            'scam': [
+                {
+                    title: "🎉 YOU'VE WON!",
+                    message: "CONGRATULATIONS! You're our 1,000,000th visitor! You've won: $5,000 Cash Prize 🎁 | iPhone 15 Pro 📱 | Luxury Vacation Package ✈️. Claim within 15 minutes or prize expires!",
+                    buttons: [
+                        { text: "Claim Prize!", next: "scam-claim" },
+                        { text: "Verify Eligibility", next: "scam-details" },
+                        { text: "Terms & Conditions", next: "scam-details" }
+                    ],
+                    isWarning: true
+                }
+            ],
+            'social': [
+                {
+                    title: "👥 Join SeniorConnect Community",
+                    message: "Connect with thousands of seniors learning technology together! To join, we'll need access to: Your basic profile information, Your contact list (to find friends), Your location (for local groups), Your photos (for profile)",
+                    buttons: [
+                        { text: "Accept & Join", next: "notifications-allow" },
+                        { text: "Customize Permissions", next: "cookies-customize" },
+                        { text: "Learn More", next: "end" }
+                    ]
+                }
+            ],
+            'shopping': [
+                {
+                    title: "🛒 Create Shopping Account",
+                    message: "Create an account to save time on future purchases and track your orders!",
+                    buttons: [
+                        { text: "Create Account", next: "shopping-create" },
+                        { text: "Continue as Guest", next: "guest-checkout" },
+                        { text: "Benefits", next: "shopping-create" }
+                    ]
+                }
+            ],
+            'banking': [
+                {
+                    title: "🏦 Secure Banking Login",
+                    message: "For your security, we need to verify your identity before you can access online banking.",
+                    buttons: [
+                        { text: "Verify Now", next: "banking-verify" },
+                        { text: "Why is this needed?", next: "banking-verify" },
+                        { text: "Contact Bank", next: "end" }
+                    ]
+                }
+            ],
+            'newsletter': [
+                {
+                    title: "📧 Newsletter Signup",
+                    message: "Get expert tips delivered to your inbox! Join 150,000+ seniors who trust our daily newsletter.",
+                    buttons: [
+                        { text: "Subscribe", next: "newsletter-subscribe" },
+                        { text: "See Sample", next: "newsletter-subscribe" },
+                        { text: "No Thanks", next: "end" }
+                    ]
+                }
+            ],
+            'course': [
+                {
+                    title: "🎓 Free Digital Skills Course",
+                    message: "Limited time offer! Our comprehensive course is completely free for seniors. Only 5 spots remaining in this session!",
+                    buttons: [
+                        { text: "Enroll Now", next: "course-enroll" },
+                        { text: "Course Details", next: "course-enroll" },
+                        { text: "Not Interested", next: "end" }
+                    ]
+                }
+            ],
+            'video-guide': [
+                {
+                    title: "🎥 Video Tutorial",
+                    message: "Learn how to make video calls with our step-by-step video guide. Duration: 45 minutes",
+                    buttons: [
+                        { text: "Watch Now", next: "video-download" },
+                        { text: "Read Text Version", next: "end" },
+                        { text: "Download PDF Guide", next: "video-download" }
+                    ]
+                }
+            ],
+            'help': [
+                {
+                    title: "💬 Customer Support",
+                    message: "How would you like to get help? Current wait times: Phone: 35 min | Chat: 20 min | Email: 24 hours",
+                    buttons: [
+                        { text: "Start Chat", next: "notifications-allow" },
+                        { text: "Call Support", next: "end" },
+                        { text: "Email Support", next: "email-continue" }
+                    ]
+                }
+            ]
+        };
+
+        function createPopup(popupData, onButtonClick) {
+            popupCounter++;
+            const popup = document.createElement('div');
+            popup.className = `popup ${popupData.isWarning ? 'warning' : ''} ${popupData.hasPartnerList ? 'large' : ''}`;
+            
+            // Better positioning for large popups
+            if (popupData.hasPartnerList) {
+                popup.style.left = '50%';
+                popup.style.top = '50%';
+                popup.style.transform = 'translate(-50%, -50%)';
+            } else {
+                popup.style.left = Math.min(Math.random() * (window.innerWidth - 500), window.innerWidth - 540) + 'px';
+                popup.style.top = Math.min(Math.random() * (window.innerHeight - 400) + 50, window.innerHeight - 450) + 'px';
+            }
+            popup.style.zIndex = 1000 + popupCounter;
+            
+            const header = document.createElement('div');
+            header.className = 'popup-header';
+            header.innerHTML = `
+                <span>${popupData.title}</span>
+                <button class="popup-close">×</button>
+            `;
+            
+            const content = document.createElement('div');
+            content.className = 'popup-content';
+            content.innerHTML = popupData.message;
+            
+            // Add form if specified
+            if (popupData.hasForm) {
+                const form = document.createElement('div');
+                const fields = popupData.formFields || ['Email', 'Password'];
+                fields.forEach(field => {
+                    form.innerHTML += `
+                        <div class="form-group">
+                            <label>${field}:</label>
+                            <input type="${field.toLowerCase().includes('password') ? 'password' : 'text'}" placeholder="Enter ${field.toLowerCase()}">
+                        </div>
+                    `;
+                });
+                content.appendChild(form);
+            }
+            
+            // Add progress bar if specified
+            if (popupData.hasProgress) {
+                const progressBar = document.createElement('div');
+                progressBar.className = 'progress-bar';
+                progressBar.innerHTML = '<div class="progress-bar-fill"></div>';
+                content.appendChild(progressBar);
+                
+                setTimeout(() => {
+                    const fill = progressBar.querySelector('.progress-bar-fill');
+                    let progress = 0;
+                    const interval = setInterval(() => {
+                        progress += Math.random() * 15;
+                        if (progress >= 100) {
+                            progress = 100;
+                            clearInterval(interval);
+                            setTimeout(() => {
+                                popup.remove();
+                                handleNext('video-install');
+                            }, 500);
+                        }
+                        fill.style.width = progress + '%';
+                    }, 500);
+                }, 100);
+            }
+
+            // Add partner list if specified
+            if (popupData.hasPartnerList) {
+                const partnerContainer = document.createElement('div');
+                partnerContainer.className = 'partner-list';
+                
+                const header = document.createElement('div');
+                header.className = 'partner-list-header';
+                header.textContent = 'Toggle each partner individually:';
+                partnerContainer.appendChild(header);
+
+                const partners = [
+                    { category: 'Technology & Analytics', companies: [
+                        'Google LLC', 'Meta Platforms (Facebook)', 'Amazon Web Services', 'Microsoft Corporation', 
+                        'Apple Inc.', 'Adobe Systems', 'Oracle Corporation', 'IBM Analytics', 'Salesforce.com',
+                        'SAP SE', 'Twitter/X Corp', 'LinkedIn Corporation', 'TikTok Inc.', 'Snapchat Inc.',
+                        'Pinterest Inc.', 'Reddit Inc.', 'Cloudflare Inc.', 'Akamai Technologies'
+                    ]},
+                    { category: 'Advertising Networks', companies: [
+                        'DoubleClick (Google)', 'AdSense', 'Facebook Audience Network', 'Amazon Advertising',
+                        'Criteo SA', 'The Trade Desk', 'AppNexus', 'MediaMath', 'Rubicon Project',
+                        'OpenX', 'PubMatic', 'Outbrain', 'Taboola', 'AdRoll', 'Rocket Fuel',
+                        'Centro Inc.', 'Sizmek', 'Integral Ad Science', 'DoubleVerify', 'Moat'
+                    ]},
+                    { category: 'Data Analytics & Tracking', companies: [
+                        'Nielsen Holdings', 'comScore', 'Quantcast', 'Mixpanel', 'Amplitude Analytics',
+                        'Segment.io', 'Heap Analytics', 'Hotjar', 'FullStory', 'Crazy Egg',
+                        'Optimizely', 'Visual Website Optimizer', 'Google Analytics', 'Adobe Analytics',
+                        'Kissmetrics', 'Piwik PRO', 'Matomo Analytics', 'Chartbeat'
+                    ]},
+                    { category: 'Marketing & CRM', companies: [
+                        'HubSpot', 'Marketo (Adobe)', 'Mailchimp', 'Constant Contact', 'SendGrid',
+                        'Campaign Monitor', 'ActiveCampaign', 'GetResponse', 'AWeber', 'ConvertKit',
+                        'Drip', 'Klaviyo', 'Braze', 'Iterable', 'Customer.io', 'Intercom'
+                    ]},
+                    { category: 'Social Media Platforms', companies: [
+                        'YouTube LLC', 'Instagram LLC', 'WhatsApp Inc.', 'Facebook Messenger',
+                        'Telegram FZ-LLC', 'Discord Inc.', 'Twitch Interactive', 'Vimeo Inc.',
+                        'Dailymotion SA', 'Tumblr Inc.', 'Medium Corporation', 'Quora Inc.'
+                    ]},
+                    { category: 'E-commerce & Retail', companies: [
+                        'Shopify Inc.', 'WooCommerce', 'BigCommerce', 'Magento (Adobe)', 'eBay Inc.',
+                        'PayPal Holdings', 'Stripe Inc.', 'Square Inc.', 'Klarna Bank', 'Affirm Inc.',
+                        'Afterpay', 'Rakuten Inc.', 'AliExpress', 'Wish.com', 'Etsy Inc.'
+                    ]},
+                    { category: 'Content Delivery Networks', companies: [
+                        'Fastly Inc.', 'StackPath', 'KeyCDN', 'BunnyCDN', 'Amazon CloudFront',
+                        'Azure CDN', 'Google Cloud CDN', 'Imperva Incapsula', 'Verizon Media CDN'
+                    ]},
+                    { category: 'Telecommunications', companies: [
+                        'AT&T Inc.', 'Verizon Communications', 'T-Mobile US', 'Sprint Corporation',
+                        'Comcast Corporation', 'Charter Communications', 'CenturyLink', 'Cox Communications',
+                        'Vodafone Group', 'Orange SA', 'Deutsche Telekom', 'Telefónica SA'
+                    ]},
+                    { category: 'Financial Services', companies: [
+                        'Visa Inc.', 'Mastercard Inc.', 'American Express', 'Discover Financial',
+                        'Capital One', 'Chase Bank', 'Bank of America', 'Wells Fargo', 'Citigroup',
+                        'HSBC Holdings', 'Barclays PLC', 'Goldman Sachs', 'Morgan Stanley'
+                    ]},
+                    { category: 'Media & Publishing', companies: [
+                        'The New York Times', 'The Washington Post', 'CNN', 'BBC', 'Reuters',
+                        'Associated Press', 'Bloomberg LP', 'Forbes Media', 'Time Inc.',
+                        'Condé Nast', 'Hearst Corporation', 'News Corp', 'Vice Media'
+                    ]},
+                    { category: 'Cloud Services', companies: [
+                        'Dropbox Inc.', 'Box Inc.', 'Google Drive', 'Microsoft OneDrive',
+                        'iCloud (Apple)', 'WeTransfer', 'Mega Limited', 'pCloud AG'
+                    ]},
+                    { category: 'Travel & Hospitality', companies: [
+                        'Booking.com', 'Expedia Group', 'Airbnb Inc.', 'TripAdvisor', 'Uber Technologies',
+                        'Lyft Inc.', 'DoorDash Inc.', 'Grubhub Inc.', 'Marriott International', 'Hilton Worldwide'
+                    ]},
+                    { category: 'Entertainment & Gaming', companies: [
+                        'Netflix Inc.', 'Disney+', 'HBO Max', 'Hulu LLC', 'Spotify AB',
+                        'Pandora Media', 'SoundCloud', 'Steam (Valve)', 'Epic Games', 'Activision Blizzard',
+                        'Electronic Arts', 'Ubisoft Entertainment', 'Nintendo Co.', 'Sony Interactive'
+                    ]},
+                    { category: 'Security & Privacy', companies: [
+                        'Norton LifeLock', 'McAfee LLC', 'Avast Software', 'Kaspersky Lab',
+                        'Bitdefender', 'Trend Micro', 'ESET', 'Malwarebytes'
+                    ]},
+                    { category: 'Other Partners', companies: [
+                        'Acxiom Corporation', 'LiveRamp', 'Neustar Inc.', 'TransUnion', 'Experian',
+                        'Equifax Inc.', 'DataLogix', 'BlueKai (Oracle)', 'Lotame Solutions', 'Bombora',
+                        'ZoomInfo', 'Clearbit', 'BuiltWith', 'SimilarWeb', 'Alexa Internet',
+                        'Recorded Future', 'Threat Connect', 'CrowdStrike', 'Palo Alto Networks',
+                        'Fortinet Inc.', 'Check Point Software', 'Symantec Corporation', 'FireEye Inc.',
+                        'Splunk Inc.', 'Elastic NV', 'MongoDB Inc.', 'Databricks', 'Snowflake Inc.',
+                        'Tableau Software', 'Looker (Google)', 'Domo Inc.', 'Sisense Ltd.',
+                        'Qlik Technologies', 'MicroStrategy', 'TIBCO Software', 'Informatica',
+                        'Talend SA', 'Alteryx Inc.', 'RapidMiner', 'DataRobot', 'H2O.ai',
+                        'Dataiku', 'Domino Data Lab', 'Anaconda Inc.', 'Jupyter Project',
+                        'Apache Software Foundation', 'Eclipse Foundation', 'Linux Foundation',
+                        'Mozilla Foundation', 'Wikimedia Foundation', 'Internet Archive',
+                        'Archive.org', 'GitHub Inc.', 'GitLab Inc.', 'Bitbucket', 'SourceForge',
+                        'Stack Overflow', 'CodePen', 'JSFiddle', 'Repl.it', 'Glitch Inc.',
+                        'Heroku (Salesforce)', 'DigitalOcean', 'Linode LLC', 'Vultr Holdings',
+                        'OVHcloud', 'Hetzner Online', 'Scaleway', 'Rackspace Technology',
+                        'GoDaddy Inc.', 'Namecheap Inc.', 'Domain.com', 'Google Domains',
+                        'Cloudflare Registrar', 'Network Solutions', 'Register.com', '1&1 IONOS',
+                        'HostGator', 'Bluehost Inc.', 'DreamHost LLC', 'SiteGround', 'A2 Hosting',
+                        'InMotion Hosting', 'WP Engine', 'Kinsta Inc.', 'Flywheel', 'Pantheon Systems',
+                        'Netlify Inc.', 'Vercel Inc.', 'CloudCannon', 'Forestry.io', 'Contentful',
+                        'Sanity.io', 'Strapi', 'Ghost Foundation', 'WordPress.com', 'Wix.com',
+                        'Squarespace Inc.', 'Weebly Inc.', 'Webflow Inc.', 'Carrd.co', 'Strikingly',
+                        'Jimdo GmbH', 'SITE123', 'Zyro.com', 'Ucraft', 'Format.com',
+                        'Cargo Collective', 'Adobe Portfolio', 'Behance (Adobe)', 'Dribbble Holdings',
+                        'Awwwards', 'CSS Design Awards', 'The FWA', 'Canva Pty Ltd', 'Figma Inc.',
+                        'Sketch BV', 'Adobe XD', 'InVision App', 'Marvel App', 'Proto.io',
+                        'Axure Software', 'Balsamiq Studios', 'Mockplus Technology', 'UXPin Inc.',
+                        'Framer BV', 'Principle Inc.', 'ProtoPie', 'Origami Studio', 'Flinto LLC',
+                        'Zeplin Inc.', 'Abstract (Adobe)', 'Avocode', 'Sympli', 'Plant UML',
+                        'Draw.io', 'Lucidchart', 'Miro (RealtimeBoard)', 'Mural.co', 'Whimsical',
+                        'FigJam (Figma)', 'Excalidraw', 'tldraw', 'Otter.ai', 'Rev.com',
+                        'Descript Inc.', 'Riverside.fm', 'SquadCast', 'Zencastr', 'Anchor FM',
+                        'Buzzsprout', 'Transistor.fm', 'Captivate.fm', 'Simplecast', 'Megaphone',
+                        'Art19 (Amazon)', 'Acast AB', 'Spreaker', 'Podbean Tech LLC', 'Blubrry',
+                        'Libsyn', 'Castos', 'SoundCloud for Podcasters', 'RedCircle', 'Podcast.co',
+                        'Substack Inc.', 'Ghost Foundation', 'Beehiiv Inc.', 'ConvertKit', 'Revue (Twitter)',
+                        'TinyLetter', 'Buttondown', 'MailerLite', 'Sendy', 'Newsletter Glue',
+                        'Livejournal', 'Blogger.com', 'TypePad', 'Posterous', 'Svbtle',
+                        'Write.as', 'Bear Blog', 'Mataroa', 'Listed (Standard Notes)', 'Telegraph',
+                        'Notion Labs', 'Obsidian', 'Roam Research', 'RemNote', 'Logseq',
+                        'Craft Docs', 'Bear Notes', 'Agenda', 'Ulysses App', 'iA Writer',
+                        'Typora', 'Mark Text', 'Zettlr', 'Notable App', 'Joplin',
+                        'Standard Notes', 'Simplenote', 'Google Keep', 'Microsoft OneNote', 'Apple Notes',
+                        'Evernote Corporation', 'Notion Labs', 'Airtable Inc.', 'Coda.io', 'Trello (Atlassian)',
+                        'Asana Inc.', 'Monday.com', 'ClickUp', 'Notion', 'Basecamp LLC',
+                        'Wrike Inc.', 'Smartsheet Inc.', 'Teamwork.com', 'Podio (Citrix)', 'Zoho Projects',
+                        'Jira (Atlassian)', 'Azure DevOps', 'Linear', 'Height', 'Shortcut (Clubhouse)',
+                        'Pivotal Tracker', 'Taiga.io', 'Redmine', 'Trac', 'MantisBT',
+                        'Bugzilla', 'YouTrack (JetBrains)', 'Backlog', 'Blossom', 'Freedcamp',
+                        'Paymo LLC', 'Avaza', 'ProofHub', 'Workzone', 'LiquidPlanner',
+                        'Mavenlink', 'FunctionFox', 'Scoro Software', 'Mosaic Projects', 'Hub Planner',
+                        'Float', 'Resource Guru', 'Forecast', 'Productive.io', 'Kantata (Mavenlink)',
+                        'And 500+ more data partners...', '...scroll down for complete list'
+                    ]}
+                ];
+
+                partners.forEach(category => {
+                    const categoryDiv = document.createElement('div');
+                    categoryDiv.className = 'partner-category';
+                    categoryDiv.textContent = category.category;
+                    partnerContainer.appendChild(categoryDiv);
+
+                    category.companies.forEach((company, index) => {
+                        const partnerItem = document.createElement('div');
+                        partnerItem.className = 'partner-item';
+                        
+                        const partnerName = document.createElement('span');
+                        partnerName.className = 'partner-name';
+                        partnerName.textContent = company;
+                        
+                        const toggleContainer = document.createElement('label');
+                        toggleContainer.className = 'toggle-switch';
+                        toggleContainer.innerHTML = `
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        `;
+                        
+                        partnerItem.appendChild(partnerName);
+                        partnerItem.appendChild(toggleContainer);
+                        partnerContainer.appendChild(partnerItem);
+                    });
+                });
+
+                content.appendChild(partnerContainer);
+            }
+            
+            const buttons = document.createElement('div');
+            buttons.className = 'popup-buttons';
+            
+            popupData.buttons.forEach((btn, index) => {
+                const button = document.createElement('button');
+                button.textContent = btn.text;
+                if (index === 0) button.classList.add('primary');
+                
+                button.onclick = () => {
+                    popup.remove();
+                    if (btn.next && btn.next !== 'end') {
+                        handleNext(btn.next);
+                    }
+                };
+                buttons.appendChild(button);
+            });
+            
+            popup.appendChild(header);
+            popup.appendChild(content);
+            popup.appendChild(buttons);
+            
+            header.querySelector('.popup-close').onclick = () => {
+                popup.remove();
+            };
+            
+            document.body.appendChild(popup);
+            
+            // Add countdown if specified
+            if (popupData.hasCountdown) {
+                let timeLeft = 300;
+                const countdownEl = popup.querySelector('.countdown');
+                if (countdownEl) {
+                    const interval = setInterval(() => {
+                        timeLeft--;
+                        const mins = Math.floor(timeLeft / 60);
+                        const secs = timeLeft % 60;
+                        countdownEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                        if (timeLeft <= 0) {
+                            clearInterval(interval);
+                            popup.remove();
+                            handleNext('verify-code');
+                        }
+                    }, 1000);
+                }
+            }
+        }
+
+        function handleNext(nextKey) {
+            if (conversationTree[nextKey]) {
+                const nextPopups = conversationTree[nextKey];
+                nextPopups.forEach((popup, index) => {
+                    setTimeout(() => createPopup(popup), index * 300);
+                });
+            }
+        }
+
+        // Add click listeners to article links
+        document.querySelectorAll('[data-trigger]').forEach(element => {
+            element.addEventListener('click', (e) => {
+                e.preventDefault();
+                const trigger = element.getAttribute('data-trigger');
+                const popups = initialTriggers[trigger];
+                
+                if (popups) {
+                    popups.forEach((popup, index) => {
+                        setTimeout(() => createPopup(popup), index * 400);
+                    });
+                }
+            });
+        });
+
+        // Initial cookie popup
+        setTimeout(() => {
+            createPopup(initialTriggers['cookies'][0]);
+        }, 2000);
+    </script>
+</body>
+</html>
