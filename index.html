@@ -456,6 +456,11 @@
     <script>
         let popupCounter = 0;
         let bannerCounter = 0;
+        let occupiedPositions = {
+            top: false,
+            bottom: false,
+            side: false
+        };
 
         // Banner ad data
         const bannerAds = [
@@ -472,12 +477,25 @@
         ];
 
         function createBanner() {
+            // Check if all positions are occupied
+            const availablePositions = Object.keys(occupiedPositions).filter(pos => !occupiedPositions[pos]);
+            
+            if (availablePositions.length === 0) {
+                console.log('All positions occupied, skipping banner creation');
+                return; // Don't create banner if all spots taken
+            }
+            
             bannerCounter++;
             console.log(`Creating banner #${bannerCounter}`);
             
             const ad = bannerAds[Math.floor(Math.random() * bannerAds.length)];
-            const positions = ['top', 'bottom', 'side'];
-            const position = positions[Math.floor(Math.random() * positions.length)];
+            // Only choose from available positions
+            const position = availablePositions[Math.floor(Math.random() * availablePositions.length)];
+            
+            // Mark position as occupied
+            occupiedPositions[position] = true;
+            
+            console.log(`Creating banner at position: ${position} (available were: ${availablePositions.join(', ')})`);
             
             const banner = document.createElement('div');
             banner.style.position = 'fixed';
@@ -492,8 +510,9 @@
             banner.style.justifyContent = 'center';
             banner.style.border = '3px solid white';
             banner.style.boxShadow = '0 4px 20px rgba(0,0,0,0.5)';
-            banner.style.animation = 'popIn 0.5s ease-out';
             banner.style.padding = '15px';
+            banner.style.opacity = '0';
+            banner.style.transition = 'opacity 0.5s ease-in';
             
             if (position === 'bottom') {
                 banner.style.bottom = '0';
@@ -527,29 +546,35 @@
             `;
             
             banner.onclick = function() {
-                console.log('Banner clicked!');
+                console.log('Banner clicked at position:', position);
+                occupiedPositions[position] = false; // Free up the position
                 document.body.removeChild(banner);
-                // Create TWO new banners
-                setTimeout(() => createBanner(), 100);
-                setTimeout(() => createBanner(), 300);
-                // Create a popup too
-                const responses = Object.values(conversationTree);
-                if (responses.length > 0) {
-                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-                    if (randomResponse[0]) createPopup(randomResponse[0]);
-                }
+                // Only create ONE new banner
+                setTimeout(() => createBanner(), 500);
             };
             
             document.body.appendChild(banner);
+            
+            // Fade in
+            setTimeout(() => {
+                banner.style.opacity = '1';
+            }, 10);
+            
             console.log(`Banner #${bannerCounter} added to page at position: ${position}`);
             
-            // Auto-remove and replace after 7 seconds
+            // Auto-remove and replace after 10 seconds
             setTimeout(() => {
                 if (banner.parentNode) {
-                    document.body.removeChild(banner);
-                    createBanner(); // Create replacement
+                    banner.style.opacity = '0';
+                    setTimeout(() => {
+                        if (banner.parentNode) {
+                            document.body.removeChild(banner);
+                            occupiedPositions[position] = false; // Free up the position
+                            console.log(`Position ${position} freed`);
+                        }
+                    }, 500);
                 }
-            }, 7000);
+            }, 10000);
         }
 
         // Define conversation tree (keeping same as before)
@@ -957,28 +982,23 @@
         setTimeout(() => {
             console.log('Creating initial cookie popup');
             createPopup(initialTriggers['cookies'][0]);
-        }, 1000);
+        }, 2000);
 
-        // Create first banner immediately!
-        console.log('Creating first banner NOW');
-        createBanner();
+        // Create banners MUCH less frequently and spaced out
+        console.log('Creating first banner in 5 seconds');
+        setTimeout(() => createBanner(), 5000);
         
-        // Create more banners quickly
-        setTimeout(() => createBanner(), 2000);
-        setTimeout(() => createBanner(), 3000);
-        setTimeout(() => createBanner(), 4000);
+        console.log('Creating second banner in 12 seconds');
+        setTimeout(() => createBanner(), 12000);
         
-        // Keep creating banners every 4 seconds
+        console.log('Creating third banner in 20 seconds');
+        setTimeout(() => createBanner(), 20000);
+        
+        // Keep creating banners every 15 seconds
         setInterval(() => {
-            console.log('Interval: Creating banner');
+            console.log('Interval: Attempting to create banner');
             createBanner();
-        }, 4000);
-        
-        // Another interval for extra chaos
-        setInterval(() => {
-            console.log('Interval 2: Creating banner');
-            createBanner();
-        }, 5000);
+        }, 15000);
         
         console.log('=== ALL TIMERS SET UP ===');
     </script>
