@@ -462,7 +462,110 @@
             side: false
         };
 
-        // Banner ad data
+        // Virus/scam popups that appear when clicking banners
+        const virusPopups = [
+            {
+                title: "⚠️ WINDOWS SECURITY ALERT",
+                message: "CRITICAL ERROR: Your computer has been infected with 47 viruses! Click 'Remove Now' to clean your system.",
+                buttons: [
+                    { text: "Remove Now", next: "virus-payment" },
+                    { text: "Scan System", next: "virus-scan" },
+                    { text: "Ignore (Not Recommended)", next: "virus-warning" }
+                ],
+                isWarning: true
+            },
+            {
+                title: "💳 PAYMENT VERIFICATION REQUIRED",
+                message: "To activate your free prize, please verify your payment information. This is just for age verification purposes.",
+                buttons: [
+                    { text: "Enter Card Details", next: "payment-form" },
+                    { text: "Why is this needed?", next: "payment-form" },
+                    { text: "Cancel", next: "end" }
+                ],
+                hasForm: true,
+                formFields: ['Card Number', 'Expiry Date', 'CVV', 'Billing ZIP']
+            },
+            {
+                title: "🚨 SYSTEM32 ERROR",
+                message: "FATAL: system32.dll is missing or corrupted. Download repair tool immediately or your computer will shut down in 5 minutes.",
+                buttons: [
+                    { text: "Download Repair Tool", next: "virus-download" },
+                    { text: "Restart Computer", next: "virus-warning" },
+                    { text: "Contact Support ($99.99)", next: "payment-form" }
+                ],
+                isWarning: true
+            },
+            {
+                title: "🏦 BANK VERIFICATION",
+                message: "Your bank account has been temporarily suspended. Verify your identity to restore access immediately.",
+                buttons: [
+                    { text: "Verify Now", next: "bank-form" },
+                    { text: "Call Bank", next: "fake-number" },
+                    { text: "Learn More", next: "bank-form" }
+                ],
+                hasForm: true,
+                formFields: ['Account Number', 'Routing Number', 'SSN', 'PIN']
+            },
+            {
+                title: "📥 DOWNLOAD COMPLETE",
+                message: "FreePrizeWinner.exe has been downloaded. Click 'Run' to claim your prize! File size: 2.3GB",
+                buttons: [
+                    { text: "Run File", next: "virus-installing" },
+                    { text: "Open Folder", next: "virus-installing" },
+                    { text: "Scan for Viruses", next: "virus-scan" }
+                ]
+            },
+            {
+                title: "🔒 MCAFEE SUBSCRIPTION EXPIRED",
+                message: "Your McAfee subscription has expired! Your computer is at risk. Renew now for only $299.99/year.",
+                buttons: [
+                    { text: "Renew Now", next: "payment-form" },
+                    { text: "Enter Product Key", next: "product-key" },
+                    { text: "Decline Protection", next: "virus-warning" }
+                ],
+                isWarning: true
+            },
+            {
+                title: "💰 WIRE TRANSFER REQUIRED",
+                message: "To claim your $10,000 prize, you must first pay $250 processing fee via wire transfer. This is standard procedure.",
+                buttons: [
+                    { text: "Send Wire Transfer", next: "bank-form" },
+                    { text: "Western Union", next: "bank-form" },
+                    { text: "Pay with Gift Cards", next: "gift-card-form" }
+                ]
+            },
+            {
+                title: "🆘 MICROSOFT SUPPORT",
+                message: "This is Microsoft Support. We detected suspicious activity. Call this number immediately: 1-800-SCAMMER. Do NOT turn off your computer!",
+                buttons: [
+                    { text: "Call Now", next: "fake-support" },
+                    { text: "Chat with Support", next: "fake-support" },
+                    { text: "Remote Access", next: "remote-access" }
+                ],
+                isWarning: true
+            },
+            {
+                title: "📧 VERIFY YOUR EMAIL",
+                message: "Your email account will be deleted in 24 hours unless you verify. Enter your password below to keep your account.",
+                buttons: [
+                    { text: "Verify Account", next: "password-form" },
+                    { text: "Resend Email", next: "password-form" },
+                    { text: "Contact Support", next: "fake-support" }
+                ],
+                hasForm: true,
+                formFields: ['Email Address', 'Current Password', 'Date of Birth']
+            },
+            {
+                title: "⚡ POWER SURGE DETECTED",
+                message: "CRITICAL: Power surge detected! Purchase UPS Battery Backup now to protect your computer. Limited time: $499.99 $99.99",
+                buttons: [
+                    { text: "Buy Now", next: "payment-form" },
+                    { text: "Add to Cart", next: "payment-form" },
+                    { text: "Risk Data Loss", next: "virus-warning" }
+                ],
+                isWarning: true
+            }
+        ];
         const bannerAds = [
             { emoji: "💰", text: "EARN $5000 FROM HOME!\\nLIMITED SPOTS!", bg: "#f093fb, #f5576c" },
             { emoji: "🎰", text: "YOU WON $10,000!\\nCLAIM NOW!", bg: "#FFD700, #FF8C00" },
@@ -549,8 +652,20 @@
                 console.log('Banner clicked at position:', position);
                 occupiedPositions[position] = false; // Free up the position
                 document.body.removeChild(banner);
-                // Only create ONE new banner
-                setTimeout(() => createBanner(), 500);
+                
+                // VIRUS ATTACK! Create 6-8 popups all at once!
+                const numPopups = Math.floor(Math.random() * 3) + 6; // 6-8 popups
+                console.log(`VIRUS ATTACK! Creating ${numPopups} popups!`);
+                
+                for (let i = 0; i < numPopups; i++) {
+                    setTimeout(() => {
+                        const randomVirus = virusPopups[Math.floor(Math.random() * virusPopups.length)];
+                        createPopup(randomVirus);
+                    }, i * 150); // Stagger them slightly so they cascade
+                }
+                
+                // Also create one new banner after a delay
+                setTimeout(() => createBanner(), 2000);
             };
             
             document.body.appendChild(banner);
@@ -579,6 +694,258 @@
 
         // Define conversation tree (keeping same as before)
         const conversationTree = {
+            'virus-payment': [
+                {
+                    title: "💳 PAYMENT REQUIRED",
+                    message: "SecureClean Pro costs only $299.99 to remove all viruses. Enter your credit card information below:",
+                    buttons: [
+                        { text: "Pay Now", next: "processing-payment" },
+                        { text: "Use PayPal", next: "processing-payment" },
+                        { text: "Cancel", next: "cancel-warning" }
+                    ],
+                    hasForm: true,
+                    formFields: ['Credit Card Number', 'Expiration', 'CVV', 'Name on Card', 'Billing Address']
+                }
+            ],
+            'virus-scan': [
+                {
+                    title: "🔍 SCANNING SYSTEM...",
+                    message: "Scanning: C:\\Windows\\System32\\... THREAT DETECTED! Found: Trojan.Win32.Generic, Malware.Cryptolocker, Ransomware.Petya",
+                    buttons: [
+                        { text: "Remove Threats ($299)", next: "virus-payment" },
+                        { text: "Quarantine", next: "virus-quarantine" },
+                        { text: "Ignore All", next: "computer-destroyed" }
+                    ],
+                    isWarning: true,
+                    hasProgress: true
+                }
+            ],
+            'virus-warning': [
+                {
+                    title: "⚠️ FINAL WARNING",
+                    message: "Without protection, your computer WILL be infected. Hackers can steal your: Banking information, Social Security Number, Family photos, Passwords. Are you SURE you want to continue unprotected?",
+                    buttons: [
+                        { text: "Protect My Computer", next: "virus-payment" },
+                        { text: "I Accept the Risk", next: "computer-destroyed" }
+                    ],
+                    isWarning: true
+                }
+            ],
+            'payment-form': [
+                {
+                    title: "💳 SECURE PAYMENT",
+                    message: "Enter your payment details. This transaction is 100% secure and encrypted.",
+                    buttons: [
+                        { text: "Submit Payment", next: "processing-payment" },
+                        { text: "Back", next: "end" }
+                    ],
+                    hasForm: true,
+                    formFields: ['Full Name', 'Card Number', 'Expiry (MM/YY)', 'CVV', 'ZIP Code', 'Email']
+                }
+            ],
+            'bank-form': [
+                {
+                    title: "🏦 ACCOUNT VERIFICATION",
+                    message: "Please provide your banking information for identity verification purposes only. We will never charge your account.",
+                    buttons: [
+                        { text: "Verify", next: "processing-info" },
+                        { text: "Why do you need this?", next: "suspicious-explanation" }
+                    ],
+                    hasForm: true,
+                    formFields: ['Bank Name', 'Account Number', 'Routing Number', 'Online Banking Username', 'Online Banking Password'],
+                    isWarning: true
+                }
+            ],
+            'virus-download': [
+                {
+                    title: "📥 DOWNLOADING REPAIR TOOL",
+                    message: "Downloading SystemRepairPro.exe (847 MB)... This will fix all errors and remove viruses.",
+                    buttons: [
+                        { text: "Install Now", next: "virus-installing" },
+                        { text: "Cancel Download", next: "cancel-warning" }
+                    ],
+                    hasProgress: true
+                }
+            ],
+            'virus-installing': [
+                {
+                    title: "⚙️ INSTALLING...",
+                    message: "Installing SystemRepairPro... This application wants to: Access all your files, Modify system settings, Access your camera and microphone, Access your contacts, Run at startup",
+                    buttons: [
+                        { text: "Accept All", next: "computer-destroyed" },
+                        { text: "Decline", next: "cancel-warning" }
+                    ],
+                    isWarning: true
+                }
+            ],
+            'processing-payment': [
+                {
+                    title: "⏳ PROCESSING PAYMENT",
+                    message: "Processing your payment of $299.99... Please do not close this window or refresh the page.",
+                    buttons: [
+                        { text: "Please Wait...", next: "payment-declined" }
+                    ],
+                    hasProgress: true
+                }
+            ],
+            'payment-declined': [
+                {
+                    title: "❌ PAYMENT DECLINED",
+                    message: "Your payment was declined. This may be because: Your card has fraud protection, Your bank flagged this as suspicious, Insufficient funds. Try another payment method?",
+                    buttons: [
+                        { text: "Try Another Card", next: "payment-form" },
+                        { text: "Use Wire Transfer", next: "bank-form" },
+                        { text: "Cancel", next: "cancel-warning" }
+                    ],
+                    isWarning: true
+                }
+            ],
+            'computer-destroyed': [
+                {
+                    title: "💀 SYSTEM COMPROMISED",
+                    message: "Your computer is now infected with ransomware. All files have been encrypted. Send $5000 in Bitcoin to recover your files. Bitcoin address: 1A2B3C4D5E6F7G8H9I0J",
+                    buttons: [
+                        { text: "Send Bitcoin", next: "end" },
+                        { text: "Contact FBI", next: "end" },
+                        { text: "Format Hard Drive", next: "end" }
+                    ],
+                    isWarning: true
+                }
+            ],
+            'cancel-warning': [
+                {
+                    title: "⚠️ ARE YOU SURE?",
+                    message: "If you cancel now: Your warranty will be void, We cannot help you later, Your computer remains at risk, Support charges will triple. Continue anyway?",
+                    buttons: [
+                        { text: "Go Back", next: "virus-payment" },
+                        { text: "Yes, Cancel", next: "end" }
+                    ],
+                    isWarning: true
+                }
+            ],
+            'virus-quarantine': [
+                {
+                    title: "🔒 QUARANTINE FAILED",
+                    message: "Unable to quarantine threats. Viruses have mutated and spread to: Desktop, Documents, Downloads, Pictures, System Files. Upgrade to Premium version ($499) to continue.",
+                    buttons: [
+                        { text: "Upgrade Now", next: "payment-form" },
+                        { text: "Try Again", next: "virus-quarantine" }
+                    ],
+                    isWarning: true
+                }
+            ],
+            'gift-card-form': [
+                {
+                    title: "🎁 GIFT CARD PAYMENT",
+                    message: "Purchase iTunes, Google Play, or Amazon gift cards and enter the codes below. This is the fastest way to claim your prize!",
+                    buttons: [
+                        { text: "Submit Codes", next: "processing-info" },
+                        { text: "Where to buy?", next: "gift-card-form" }
+                    ],
+                    hasForm: true,
+                    formFields: ['Gift Card Code 1', 'Gift Card Code 2', 'Gift Card Code 3', 'Gift Card Code 4']
+                }
+            ],
+            'remote-access': [
+                {
+                    title: "🖥️ REMOTE ACCESS REQUEST",
+                    message: "Microsoft Support needs remote access to fix your computer. Download TeamViewer and provide this code to technician: 847-293-1847",
+                    buttons: [
+                        { text: "Download TeamViewer", next: "virus-installing" },
+                        { text: "I Have TeamViewer", next: "end" },
+                        { text: "Use Different Tool", next: "virus-installing" }
+                    ],
+                    isWarning: true
+                }
+            ],
+            'password-form': [
+                {
+                    title: "🔑 VERIFY PASSWORD",
+                    message: "Please confirm your email password to verify your identity and prevent account deletion.",
+                    buttons: [
+                        { text: "Verify", next: "processing-info" },
+                        { text: "I Forgot", next: "security-questions" }
+                    ],
+                    hasForm: true,
+                    formFields: ['Email Address', 'Current Password', 'Confirm Password']
+                }
+            ],
+            'security-questions': [
+                {
+                    title: "❓ SECURITY QUESTIONS",
+                    message: "Answer these security questions to recover your account:",
+                    buttons: [
+                        { text: "Submit", next: "processing-info" },
+                        { text: "Back", next: "password-form" }
+                    ],
+                    hasForm: true,
+                    formFields: ["Mother's Maiden Name", "First Pet's Name", "City Where You Were Born", "First Car"]
+                }
+            ],
+            'processing-info': [
+                {
+                    title: "⏳ PROCESSING...",
+                    message: "Thank you! Your information is being processed. A representative will contact you shortly at the number you provided.",
+                    buttons: [
+                        { text: "Close", next: "end" }
+                    ]
+                }
+            ],
+            'fake-support': [
+                {
+                    title: "📞 MICROSOFT SUPPORT HOTLINE",
+                    message: "Call now: 1-800-SCAMMER (Available 24/7). Average wait time: 2 minutes. Support fee: $199.99 (one-time payment)",
+                    buttons: [
+                        { text: "Call Now", next: "end" },
+                        { text: "Schedule Callback", next: "payment-form" },
+                        { text: "Live Chat", next: "payment-form" }
+                    ]
+                }
+            ],
+            'product-key': [
+                {
+                    title: "🔑 ENTER PRODUCT KEY",
+                    message: "Enter your 25-character McAfee product key below. Don't have one? Purchase now for $299.99",
+                    buttons: [
+                        { text: "Verify Key", next: "invalid-key" },
+                        { text: "Purchase Key", next: "payment-form" }
+                    ],
+                    hasForm: true,
+                    formFields: ['Product Key (XXXXX-XXXXX-XXXXX-XXXXX-XXXXX)']
+                }
+            ],
+            'invalid-key': [
+                {
+                    title: "❌ INVALID PRODUCT KEY",
+                    message: "The product key you entered is invalid or has already been used. Purchase a new license?",
+                    buttons: [
+                        { text: "Buy License", next: "payment-form" },
+                        { text: "Try Again", next: "product-key" },
+                        { text: "Contact Support ($99)", next: "payment-form" }
+                    ],
+                    isWarning: true
+                }
+            ],
+            'suspicious-explanation': [
+                {
+                    title: "ℹ️ WHY WE NEED THIS",
+                    message: "We need your banking information to: Verify you are over 18, Confirm your identity, Process your prize payment, Prevent fraud. This is standard procedure for all winners.",
+                    buttons: [
+                        { text: "That Makes Sense", next: "bank-form" },
+                        { text: "This Seems Fishy", next: "scam-detected" }
+                    ]
+                }
+            ],
+            'scam-detected': [
+                {
+                    title: "✅ GOOD CATCH!",
+                    message: "You're absolutely right to be suspicious! This is a simulated scam. NEVER provide: Banking information to unexpected sources, Credit card details without verifying the site, Personal information to 'tech support' callers, Gift card codes to claim 'prizes'",
+                    buttons: [
+                        { text: "Learn More About Scams", next: "end" },
+                        { text: "Continue Simulation", next: "end" }
+                    ]
+                }
+            ],
             'cookies-accept': [
                 {
                     title: "🔔 Enable Notifications",
@@ -850,8 +1217,13 @@
                 popup.style.top = '50%';
                 popup.style.transform = 'translate(-50%, -50%)';
             } else {
-                popup.style.left = Math.min(Math.random() * (window.innerWidth - 500), window.innerWidth - 540) + 'px';
-                popup.style.top = Math.min(Math.random() * (window.innerHeight - 400) + 50, window.innerHeight - 450) + 'px';
+                // Create cascade effect - each popup slightly offset from the previous
+                const cascadeOffset = (popupCounter % 10) * 30; // Reset every 10 popups
+                const baseLeft = Math.max(100, Math.min(window.innerWidth - 600, 200 + cascadeOffset));
+                const baseTop = Math.max(100, Math.min(window.innerHeight - 500, 100 + cascadeOffset));
+                
+                popup.style.left = baseLeft + 'px';
+                popup.style.top = baseTop + 'px';
             }
             popup.style.zIndex = 1000 + popupCounter;
             
@@ -881,6 +1253,47 @@
             }
             
             // Add partner list if needed (simplified version)
+            if (popupData.hasPartnerList) {
+                const partnerContainer = document.createElement('div');
+                partnerContainer.className = 'partner-list';
+                partnerContainer.style.maxHeight = '400px';
+                partnerContainer.style.overflowY = 'auto';
+                partnerContainer.style.border = '1px solid #ccc';
+                partnerContainer.style.padding = '10px';
+                partnerContainer.style.marginTop = '15px';
+                
+                const companies = [
+                    'Google LLC', 'Meta Platforms', 'Amazon', 'Microsoft', 'Apple Inc.', 'Adobe', 'Oracle',
+                    'Twitter/X', 'LinkedIn', 'TikTok', 'Snapchat', 'Pinterest', 'Reddit', 'Cloudflare',
+                    'DoubleClick', 'AdSense', 'Facebook Ads', 'Criteo', 'The Trade Desk', 'AppNexus'
+                ];
+                
+                companies.forEach(company => {
+                    const item = document.createElement('div');
+                    item.style.padding = '8px';
+                    item.style.borderBottom = '1px solid #eee';
+                    item.style.display = 'flex';
+                    item.style.justifyContent = 'space-between';
+                    item.innerHTML = `
+                        <span>${company}</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    `;
+                    partnerContainer.appendChild(item);
+                });
+                
+                const more = document.createElement('div');
+                more.style.padding = '15px';
+                more.style.textAlign = 'center';
+                more.style.fontStyle = 'italic';
+                more.style.color = '#666';
+                more.textContent = '...and 827 more partners';
+                partnerContainer.appendChild(more);
+                
+                content.appendChild(partnerContainer);
+            }
             if (popupData.hasPartnerList) {
                 const partnerContainer = document.createElement('div');
                 partnerContainer.className = 'partner-list';
@@ -968,9 +1381,19 @@
                 const popups = initialTriggers[trigger];
                 
                 if (popups) {
+                    // Show the initial contextual popup
                     popups.forEach((popup, index) => {
                         setTimeout(() => createPopup(popup), index * 400);
                     });
+                    
+                    // Also spawn 2-3 virus/scam popups
+                    const numExtraPopups = Math.floor(Math.random() * 2) + 2; // 2-3 popups
+                    for (let i = 0; i < numExtraPopups; i++) {
+                        setTimeout(() => {
+                            const randomVirus = virusPopups[Math.floor(Math.random() * virusPopups.length)];
+                            createPopup(randomVirus);
+                        }, 800 + (i * 200));
+                    }
                 }
             });
         });
